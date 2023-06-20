@@ -2,7 +2,7 @@
 
 Solve Gray-Scott equation with [numba](https://numba.readthedocs.io/en/stable/)
 
-We use a numba installation with and without [SVML library](https://numba.pydata.org/numba-doc/latest/user/performance-tips.html#intel-svml). SVML is Intel library provides a short vector math library.
+We use a numba installation with and without [SVML library](https://numba.pydata.org/numba-doc/latest/user/performance-tips.html#intel-svml). SVML is Intel library provides a short vector math library, check if you are correctly install SVML
 
 ```bash
 $ numba -s | grep SVML

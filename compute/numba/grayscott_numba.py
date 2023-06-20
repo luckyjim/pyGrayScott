@@ -101,9 +101,9 @@ def grayscott_loop(U, V, nb_frame, step_frame=34):
 if __name__ == "__main__":
     n_size = 300
     U, V, _ = gsc.init_gray_scott(n_size, n_size)
-    U, V, _ = gsc.init_gray_scott(1920, 1080)
-    frames = grayscott_loop(U, V, 1000)
-    gsc.frames_to_video(frames, "gray_scott_numba_34000_SVML2")
+    #U, V, _ = gsc.init_gray_scott(1920, 1080)
+    frames = grayscott_loop(U, V, 100)
+    gsc.frames_to_video(frames, "gray_scott_numba_test")
     # last image
     plt.figure()
     plt.imshow(frames[-1])
