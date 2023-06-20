@@ -2,36 +2,6 @@
 Created on 17 juin 2023
 
 
-In [2]: numba.__version__
-Out[2]: '0.56.4'
-
-
-bench 1:
-1920 1080
-step_x=0.0005211047420531526
-step_frame=34
-nb_frame=500
-CPU time= 213.75834463799998 s
-(500, 1920, 1080)
-
-
-bench 2:
-step_frame=34
-nb_frame=1000
-CPU time= 439.44128702300003 s
-(1000, 1920, 1080)
-
-bench 3: with short vector math library (SVML) 
-step_frame=34
-nb_frame=1000
-CPU time= 352.219058588 s
-(1000, 1920, 1080)
-$ numba -s | grep SVML
-__SVML Information__
-SVML State, config.USING_SVML                 : True
-SVML Library Loaded                           : True
-llvmlite Using SVML Patched LLVM              : True
-SVML Operational                              : True
 
 
 """
@@ -39,14 +9,10 @@ import time
 
 import numpy as np
 import matplotlib.pylab as plt
-import numba as nb
 
 import compute.common as gsc
 
-kwd = {"cache": True, "fastmath": {"reassoc", "contract", "arcp"}}
-
-@nb.njit(**kwd)
-def grayscott_numba(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_frame):
+def grayscott_naive(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_frame):
     n_x, n_y = m_U.shape[0], m_U.shape[1]
     alpha_u = -Feed - 4 * Du
     alpha_v = -Feed - Kill - 4 * Dv
@@ -86,7 +52,7 @@ def grayscott_loop(U, V, nb_frame, step_frame=34):
     print(f"step_frame={step_frame}")
     print(f"nb_frame={nb_frame}")
     t0 = time.process_time()
-    frames_V = grayscott_numba(U, V, Du, Dv, F, k, delta_t, nb_frame, step_frame)
+    frames_V = grayscott_naive(U, V, Du, Dv, F, k, delta_t, nb_frame, step_frame)
     duration = time.process_time() - t0
     print(f"CPU time= {duration} s")
     frames_ui = np.empty((nb_frame, U.shape[0], U.shape[1]), dtype=np.uint8)
@@ -101,9 +67,9 @@ def grayscott_loop(U, V, nb_frame, step_frame=34):
 if __name__ == "__main__":
     n_size = 300
     U, V, _ = gsc.init_gray_scott(n_size, n_size)
-    U, V, _ = gsc.init_gray_scott(1920, 1080)
-    frames = grayscott_loop(U, V, 1000)
-    gsc.frames_to_video(frames, "gray_scott_numba_34000_SVML2")
+    #U, V, _ = gsc.init_gray_scott(1920, 1080)
+    frames = grayscott_loop(U, V, 5)
+    gsc.frames_to_video(frames, "gray_scott_python")
     # last image
     plt.figure()
     plt.imshow(frames[-1])
