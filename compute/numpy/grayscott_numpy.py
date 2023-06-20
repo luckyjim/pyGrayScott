@@ -1,7 +1,7 @@
 """
 Created on 17 juin 2023
 
-
+from https://pnavaro.github.io/python-fortran/06.gray-scott-model.html
 """
 import time
 
