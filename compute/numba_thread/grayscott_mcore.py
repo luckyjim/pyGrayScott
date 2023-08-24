@@ -73,8 +73,8 @@ def grayscott_loop(U, V, nb_frame, step_frame=34):
 if __name__ == "__main__":
     set_num_threads(4)
     #n_size = 500
-    #U, V, _ = gsc.init_gray_scott(n_size, n_size)
-    U, V, _ = gsc.init_gray_scott(1920, 1080)
+    #U, V, _ = gsc.grayscott_init(n_size, n_size)
+    U, V, _ = gsc.grayscott_init(1920, 1080)
     frames = grayscott_loop(U, V, 1000)
     gsc.frames_to_video(frames, "gray_scott_mcore_full_4c")
     # last image

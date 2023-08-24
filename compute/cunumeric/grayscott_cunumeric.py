@@ -1,10 +1,5 @@
-"""
-Created on 17 juin 2023
-
-from https://pnavaro.github.io/python-fortran/06.gray-scott-model.html
-"""
-
-import numpy as np
+#import numpy as np
+import cunumeric as np
 
 import compute.common as gsc
 
@@ -35,7 +30,7 @@ def grayscott_core(U, V, Du, Dv, F, k, delta_t):
     return U, V
 
 
-def grayscott_numpy(U, V, Du, Dv, F, k, delta_t, nb_frame, step_frame):
+def grayscott_cunumeric(U, V, Du, Dv, F, k, delta_t, nb_frame, step_frame):
     n_x, n_y = U.shape[0], U.shape[1]
     frames_V = np.empty((nb_frame, n_x, n_y), dtype=V.dtype)
     idx_fr = -1
@@ -52,5 +47,5 @@ if __name__ == "__main__":
     # U, V, _ = gsc.grayscott_init(1920, 1080)
     gs_pars = gsc.grayscott_pars()
     nb_frame = 100
-    frames_ui = gsc.grayscott_main(grayscott_numpy, gs_pars, U, V, nb_frame)
+    frames_ui = gsc.grayscott_main(grayscott_cunumeric, gs_pars, U, V, nb_frame)
     

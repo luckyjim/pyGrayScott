@@ -33,7 +33,7 @@ SVML Library Loaded                           : True
 llvmlite Using SVML Patched LLVM              : True
 SVML Operational                              : True
 """
-import time
+
 
 import numpy as np
 import matplotlib.pylab as plt
@@ -60,8 +60,8 @@ def grayscott_numba(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_frame)
     c_V = np.empty_like(m_U)
     for idx_f in range(nb_frame):
         for _ in range_step:
-            c_U[:, :] = m_U
-            c_V[:, :] = m_V
+            c_U[:,:] = m_U
+            c_V[:,:] = m_V
             for li in range_i:
                 for lj in range_j:
                     uvv = c_U[li, lj] * (c_V[li, lj] ** 2)
@@ -75,11 +75,11 @@ def grayscott_numba(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_frame)
                         c_V[li - 1, lj] + c_V[li + 1, lj] + c_V[li, lj - 1] + c_V[li, lj + 1]
                     )
                     m_V[li, lj] += delta_t * dvdt
-        frames_V[idx_f, :, :] = m_V
+        frames_V[idx_f,:,:] = m_V
     return frames_V
 
 
-#@nb.njit(**kwd)
+# @nb.njit(**kwd)
 def grayscott_vec_fma_add(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_frame):
     # Init constante
     n_x, n_y = m_U.shape[0], m_U.shape[1]
@@ -109,8 +109,8 @@ def grayscott_vec_fma_add(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_
     vec_v1[6] = alpha_v
     for idx_f in range(nb_frame):
         for _ in range_step:
-            c_U[:, :] = m_U
-            c_V[:, :] = m_V
+            c_U[:,:] = m_U
+            c_V[:,:] = m_V
             for li in range_i:
                 for lj4 in range_j4:
                     for lk in range_4:
@@ -137,8 +137,8 @@ def grayscott_vec_fma_add(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_
                     vec_u1[5] = vec_u1[5] * vec_u1[6] + vec_u1[7]
                     vec_u1[5] += vec_u1[3] * vec_u1[4]
                     # do m_U[li, lj] += (delta_t * dudt) + dtFeed
-                    m_U[li, lj4 : lj4 + 4] = (
-                        c_U[li, lj4 : lj4 + 4] + vec_u2[0] + vec_u1[5] * vec_u2[1]
+                    m_U[li, lj4: lj4 + 4] = (
+                        c_U[li, lj4: lj4 + 4] + vec_u2[0] + vec_u1[5] * vec_u2[1]
                     )
                     # vectorial calculuation for m_V
                     vec_v1[1] += vec_v1[0]
@@ -148,40 +148,19 @@ def grayscott_vec_fma_add(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_
                     vec_v1[5] += vec_v1[3] * vec_v1[4]
                     # do m_V[li, lj] += (delta_t * dvdt)
                     # we used dt vec of U vec_u2[ 1]
-                    m_V[li, lj4 : lj4 + 4] = c_V[li, lj4 : lj4 + 4] + vec_v1[5] * vec_u2[1]
-        frames_V[idx_f, :, :] = m_V
+                    m_V[li, lj4: lj4 + 4] = c_V[li, lj4: lj4 + 4] + vec_v1[5] * vec_u2[1]
+        frames_V[idx_f,:,:] = m_V
     return frames_V
-
-
-def grayscott_loop(U, V, nb_frame, step_frame=34):
-    Du, Dv = 0.1, 0.05
-    F, k = 0.0565, 0.062
-    # F, k = 0.03, 0.062
-    step_frame = 34
-    delta_t = 1
-    print(f"step_frame={step_frame}")
-    print(f"nb_frame={nb_frame}")
-    t0 = time.process_time()
-    frames_V = grayscott_numba(U, V, Du, Dv, F, k, delta_t, nb_frame, step_frame)
-    #frames_V = grayscott_vec_fma_add(U, V, Du, Dv, F, k, delta_t, nb_frame, step_frame)
-    duration = time.process_time() - t0
-    print(f"CPU time= {duration} s")
-    frames_ui = np.empty((nb_frame, U.shape[0], U.shape[1]), dtype=np.uint8)
-    for idx in range(nb_frame):
-        V = frames_V[idx]
-        V_min = V.min()
-        V_scaled = np.uint8(255 * (V - V_min / (V.max() - V_min)))
-        frames_ui[idx] = V_scaled
-    return frames_ui
 
 
 if __name__ == "__main__":
     n_size = 500
-    U, V, _ = gsc.init_gray_scott(n_size, n_size)
-    U, V, _ = gsc.init_gray_scott(1920, 1080)
-    frames = grayscott_loop(U, V, 1000)
-    gsc.frames_to_video(frames, "gray_scott_numba_full_1000")
+    U, V, _ = gsc.grayscott_init(n_size, n_size)
+    U, V, _ = gsc.grayscott_init(1920, 1080)
+    gs_pars = gsc.grayscott_pars()
+    nb_frame = 100
+    frames_ui = gsc.grayscott_main(grayscott_numba, gs_pars, U, V, nb_frame)
     # last image
     plt.figure()
-    plt.imshow(frames[-1])
+    plt.imshow(frames_ui[-1])
     plt.show()
