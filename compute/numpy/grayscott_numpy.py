@@ -65,7 +65,7 @@ if __name__ == "__main__":
     # redfinition de delta_x pour convergence
     delta_x = 1
     delta_t = 1
-    nb_iteration = 40 * 10
+    nb_iteration = 300 * 10
     frames = grayscott_loop(U, V, delta_x,delta_t , nb_iteration)
     duration = time.process_time() - t0
     print(f"CPU time= {duration} s")
