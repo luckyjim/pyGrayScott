@@ -34,7 +34,6 @@ llvmlite Using SVML Patched LLVM              : True
 SVML Operational                              : True
 """
 
-
 import numpy as np
 import matplotlib.pylab as plt
 import numba as nb
@@ -76,6 +75,108 @@ def grayscott_numba(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_frame)
                     )
                     m_V[li, lj] += delta_t * dvdt
         frames_V[idx_f,:,:] = m_V
+    return frames_V
+
+
+@nb.njit(fastmath={"reassoc", "contract", "arcp"}, cache=True, parallel=True)
+def grayscott_numba_par(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_frame):
+    # Init constante
+    n_x, n_y = m_U.shape[0], m_U.shape[1]
+    alpha_u = -Feed - 4 * Du
+    alpha_v = -Feed - Kill - 4 * Dv
+    dtFeed = delta_t * Feed
+    # alloc
+    frames_V = np.empty((nb_frame, n_x, n_y), dtype=m_V.dtype)
+    range_i = range(1, n_x - 1)
+    range_j = range(1, n_y - 1)
+    range_step = range(step_frame)
+    c_U = np.empty_like(m_U)
+    c_V = np.empty_like(m_U)
+    for idx_f in range(nb_frame):
+        for _ in range_step:
+            c_U[:,:] = m_U
+            c_V[:,:] = m_V
+            for li in nb.prange(1, n_x - 1):
+                for lj in range_j:
+                    uvv = c_U[li, lj] * (c_V[li, lj] ** 2)
+                    # update m_U
+                    dudt = ((c_U[li, lj] * alpha_u) - uvv) + Du * (
+                        c_U[li - 1, lj] + c_U[li + 1, lj] + c_U[li, lj - 1] + c_U[li, lj + 1]
+                    )
+                    m_U[li, lj] += (delta_t * dudt) + dtFeed
+                    # update m_V
+                    dvdt = ((c_V[li, lj] * alpha_v) + uvv) + Dv * (
+                        c_V[li - 1, lj] + c_V[li + 1, lj] + c_V[li, lj - 1] + c_V[li, lj + 1]
+                    )
+                    m_V[li, lj] += delta_t * dvdt
+        frames_V[idx_f,:,:] = m_V
+    return frames_V
+
+
+@nb.njit(**kwd)
+def grayscott_numba2(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_frame):
+    # Init constante
+    n_x, n_y = m_U.shape[0], m_U.shape[1]
+    alpha_u = -Feed - 4 * Du
+    alpha_v = -Feed - Kill - 4 * Dv
+    dtFeed = delta_t * Feed
+    # alloc
+    frames_V = np.empty((nb_frame, n_x, n_y), dtype=m_V.dtype)
+    range_i = range(1, n_x - 1)
+    range_j = range(1, n_y - 1)
+    range_step = range(step_frame)
+    for idx_f in range(nb_frame):
+        for _ in range_step:
+            for li in range_i:
+                for lj in range_j:
+                    uvv = m_U[li, lj] * (m_V[li, lj] ** 2)
+                    # update m_U
+                    dudt = ((m_U[li, lj] * alpha_u) - uvv) + Du * (
+                        m_U[li - 1, lj] + m_U[li + 1, lj] + m_U[li, lj - 1] + m_U[li, lj + 1]
+                    )
+                    # update m_V
+                    dvdt = ((m_V[li, lj] * alpha_v) + uvv) + Dv * (
+                        m_V[li - 1, lj] + m_V[li + 1, lj] + m_V[li, lj - 1] + m_V[li, lj + 1]
+                    )
+                    m_V[li, lj] += delta_t * dvdt
+                    m_U[li, lj] += (delta_t * dudt) + dtFeed
+        frames_V[idx_f,:,:] = m_V
+    return frames_V
+
+
+@nb.njit(**kwd)
+def grayscott_numba3(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_frame):
+    # Init constante
+    n_x, n_y = m_U.shape[0], m_U.shape[1]
+    alpha_u = -Feed - 4 * Du
+    alpha_v = -Feed - Kill - 4 * Dv
+    dtFeed = delta_t * Feed
+    # alloc
+    frames_V = np.empty((nb_frame, n_x, n_y), dtype=m_V.dtype)
+    range_i = range(1, n_x - 1)
+    range_j = range(1, n_y - 1)
+    range_step = range(step_frame)
+    c_x = np.zeros((2, n_x, n_y), dtype=m_V.dtype)
+    c_U = c_x[0]
+    c_V = c_x[1]
+    c_U[:,:] = m_U
+    c_V[:,:] = m_V
+    for idx_f in range(nb_frame):
+        for _ in range_step:
+            for li in range_i:
+                for lj in range_j:
+                    uvv = c_U[li, lj] * (c_V[li, lj] ** 2)
+                    # update m_U
+                    dudt = ((c_U[li, lj] * alpha_u) - uvv) + Du * (
+                        c_U[li - 1, lj] + c_U[li + 1, lj] + c_U[li, lj - 1] + c_U[li, lj + 1]
+                    )
+                    # update m_V
+                    dvdt = ((c_V[li, lj] * alpha_v) + uvv) + Dv * (
+                        c_V[li - 1, lj] + c_V[li + 1, lj] + c_V[li, lj - 1] + c_V[li, lj + 1]
+                    )
+                    c_U[li, lj] += (delta_t * dudt) + dtFeed
+                    c_V[li, lj] += delta_t * dvdt
+        frames_V[idx_f,:,:] = c_V
     return frames_V
 
 
@@ -155,7 +256,7 @@ def grayscott_vec_fma_add(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_
 
 if __name__ == "__main__":
     n_size = 500
-    U, V, _ = gsc.grayscott_init(n_size, n_size)
+    #U, V, _ = gsc.grayscott_init(n_size, n_size)
     U, V, _ = gsc.grayscott_init(1920, 1080)
     gs_pars = gsc.grayscott_pars()
     nb_frame = 100
@@ -163,4 +264,4 @@ if __name__ == "__main__":
     # last image
     plt.figure()
     plt.imshow(frames_ui[-1])
-    plt.show()
+    # plt.show()

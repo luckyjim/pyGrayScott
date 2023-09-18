@@ -81,6 +81,7 @@ def grayscott_main(func_grayscott, gs_pars, u_ar, v_ar, nb_frame, step_frame=34)
     delta_t = 1
     print(f"step_frame={step_frame}")
     print(f"nb_frame={nb_frame}")
+    print(func_grayscott.__name__)
     t0 = time.process_time()
     frames_v_ar = func_grayscott(u_ar, v_ar, Du, Dv, F, k, delta_t, nb_frame, step_frame)
     duration = time.process_time() - t0
@@ -91,9 +92,9 @@ def grayscott_main(func_grayscott, gs_pars, u_ar, v_ar, nb_frame, step_frame=34)
         v_ar_min = v_ar.min()
         v_ar_scaled = np.uint8(255 * (v_ar - v_ar_min / (v_ar.max() - v_ar_min)))
         frames_ui[idx] = v_ar_scaled
-    file_video = func_grayscott.__name__ + f"_{u_ar.shape[0]}x{u_ar.shape[1]}_{nb_frame}"
+    file_video = func_grayscott.__name__ + f"_{u_ar.shape[0]}x{u_ar.shape[1]}_{nb_frame}_{int(duration+0.5)}"
     frames_to_video(frames_ui, file_video)
     plt.figure()
     plt.imshow(frames_ui[-1])
-    plt.show()    
+    #plt.show()    
     return frames_ui

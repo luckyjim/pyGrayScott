@@ -5,11 +5,12 @@ import time
 
 import numpy as np
 import matplotlib.pylab as plt
-from numba import njit, prange, threading_layer, set_num_threads
+from numba import njit, prange, threading_layer, set_num_threads, get_num_threads
 
 import compute.common as gsc
 
-kwd = {"cache": True, "fastmath": {"reassoc", "contract", "arcp"}, "parallel": True}
+#kwd = {"fastmath": {"reassoc", "contract", "arcp"}, "parallel": True}
+kwd = {"fastmath": {"reassoc", "contract", "arcp"}}
 #kwd = {"cache": True, "fastmath": {"reassoc", "contract", "arcp"}}
 
 #@nb.njit(parallel=True, fastmath=True)
@@ -22,29 +23,35 @@ def grayscott_mcore(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_frame)
     dtFeed = delta_t * Feed
     # alloc
     frames_V = np.empty((nb_frame, n_x, n_y), dtype=m_V.dtype)
-    range_i = range(1, n_x - 1)
-    range_j = range(1, n_y - 1)x
+    #range_i = range(1, n_x - 1)
+    n_core=get_num_threads()
+    
+    n_x_c = n_x //n_core
+    range_j = range(1, n_y - 1)
     range_step = range(step_frame)
     c_U = np.empty_like(m_U)
     c_V = np.empty_like(m_U)
     for idx_f in range(nb_frame):
         for _ in range_step:
             c_U[:, :] = m_U
-            c_V[:, :] = m_V            
-            for li in prange(1, n_x - 1):
-                for lj in range_j:
-                    uvv = c_U[li, lj] * (c_V[li, lj] ** 2)
-                    # update m_U
-                    dudt = ((c_U[li, lj] * alpha_u) - uvv) + Du * (
-                        c_U[li - 1, lj] + c_U[li + 1, lj] + c_U[li, lj - 1] + c_U[li, lj + 1]
-                    )
-                    m_U[li, lj] += (delta_t * dudt) + dtFeed
-                    # update m_V
-                    dvdt = ((c_V[li, lj] * alpha_v) + uvv) + Dv * (
-                        c_V[li - 1, lj] + c_V[li + 1, lj] + c_V[li, lj - 1] + c_V[li, lj + 1]
-                    )
-                    m_V[li, lj] += delta_t * dvdt
-        frames_V[idx_f, :, :] = m_V
+            c_V[:, :] = m_V
+            for lc in prange(n_core):
+                i_start = n_x_c*lc+1
+                i_end = i_start +  n_x_c               
+                for li in range(i_start,i_end+1):
+                    for lj in range_j:
+                        uvv = c_U[li, lj] * (c_V[li, lj] ** 2)
+                        # update m_U
+                        dudt = ((c_U[li, lj] * alpha_u) - uvv) + Du * (
+                            c_U[li - 1, lj] + c_U[li + 1, lj] + c_U[li, lj - 1] + c_U[li, lj + 1]
+                        )
+                        m_U[li, lj] += (delta_t * dudt) + dtFeed
+                        # update m_V
+                        dvdt = ((c_V[li, lj] * alpha_v) + uvv) + Dv * (
+                            c_V[li - 1, lj] + c_V[li + 1, lj] + c_V[li, lj - 1] + c_V[li, lj + 1]
+                        )
+                        m_V[li, lj] += delta_t * dvdt
+            frames_V[idx_f, :, :] = m_V
     return frames_V
 
 
@@ -71,11 +78,11 @@ def grayscott_loop(U, V, nb_frame, step_frame=34):
 
 
 if __name__ == "__main__":
-    set_num_threads(4)
+    #set_num_threads(1)
     #n_size = 500
     #U, V, _ = gsc.grayscott_init(n_size, n_size)
     U, V, _ = gsc.grayscott_init(1920, 1080)
-    frames = grayscott_loop(U, V, 1000)
+    frames = grayscott_loop(U, V, 10)
     gsc.frames_to_video(frames, "gray_scott_mcore_full_4c")
     # last image
     # plt.figure()
