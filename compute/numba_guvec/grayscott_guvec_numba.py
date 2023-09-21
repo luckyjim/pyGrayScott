@@ -1,37 +1,5 @@
 """
-Created on 17 juin 2023
-
-
-In [2]: numba.__version__
-Out[2]: '0.56.4'
-
-
-bench 1:
-1920 1080
-step_x=0.0005211047420531526
-step_frame=34
-nb_frame=500
-CPU time= 213.75834463799998 s
-(500, 1920, 1080)
-
-
-bench 2:
-step_frame=34
-nb_frame=1000
-CPU time= 439.44128702300003 s
-(1000, 1920, 1080)
-
-bench 3: with short vector math library (SVML) 
-step_frame=34
-nb_frame=1000
-CPU time= 352.219058588 s
-(1000, 1920, 1080)
-$ numba -s | grep SVML
-__SVML Information__
-SVML State, config.USING_SVML                 : True
-SVML Library Loaded                           : True
-llvmlite Using SVML Patched LLVM              : True
-SVML Operational                              : True
+C
 """
 
 import numpy as np
@@ -43,8 +11,8 @@ import compute.common as gsc
 kwd = {"cache": True, "fastmath": {"reassoc", "contract", "arcp"}}
 
 
-@nb.guvectorize(['(float32[:,:], float32[:,:], float32[4], float32[:,:]) '],
-             '(n, m)(n, m)(4) -> (n, m)',
+@nb.guvectorize([(nb.float32[:,:], nb.float32[:,:], nb.float32[4], nb.float32[:,:])],
+             '(n, m),(n, m),(4) -> (n, m)',
              target='cuda')
 def grayscott_gu(m_U, m_V, pars, out_array):
     # Init constante
@@ -57,6 +25,7 @@ def grayscott_gu(m_U, m_V, pars, out_array):
     frames_V = np.empty((nb_frame, n_x, n_y), dtype=m_V.dtype)
     range_i = range(1, n_x - 1)
     range_j = range(1, n_y - 1)
+    step_frame = 34
     range_step = range(step_frame)
     c_U = np.empty_like(m_U)
     c_V = np.empty_like(m_U)
@@ -82,8 +51,10 @@ def grayscott_gu(m_U, m_V, pars, out_array):
 
 
 @nb.njit(**kwd)
-def grayscott_numba_guvec(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_frame):
-    pass
+def grayscott_numba_ufunc(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_frame):
+    pars = np.array([Du, Dv, Feed, Kill, delta_t], dtype=np.float32)
+    out_array = np.zeros_like(m_U)
+    grayscott_gu(m_U, m_V, pars, out_array)
 
 
 if __name__ == "__main__":
@@ -92,7 +63,7 @@ if __name__ == "__main__":
     U, V, _ = gsc.grayscott_init(1920, 1080)
     gs_pars = gsc.grayscott_pars()
     nb_frame = 200
-    frames_ui = gsc.grayscott_main(grayscott_numba_guvec, gs_pars, U, V, nb_frame)
+    frames_ui = gsc.grayscott_main(grayscott_numba_ufunc, gs_pars, U, V, nb_frame)
     # last image
     plt.figure()
     plt.imshow(frames_ui[-1])
