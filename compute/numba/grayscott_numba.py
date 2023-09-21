@@ -87,7 +87,6 @@ def grayscott_numba_par(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_fr
     dtFeed = delta_t * Feed
     # alloc
     frames_V = np.empty((nb_frame, n_x, n_y), dtype=m_V.dtype)
-    range_i = range(1, n_x - 1)
     range_j = range(1, n_y - 1)
     range_step = range(step_frame)
     c_U = np.empty_like(m_U)
@@ -113,6 +112,44 @@ def grayscott_numba_par(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_fr
     return frames_V
 
 
+def grayscott_numba_par_safe(m_U, m_V, Du, Dv, Feed, Kill, delta_t, nb_frame, step_frame):
+    # alloc
+    n_x, n_y = m_U.shape[0], m_U.shape[1]
+    frames_V = np.empty((nb_frame, n_x, n_y), dtype=m_V.dtype)
+    for idx_f in range(nb_frame):
+        m_U, m_V  = grayscott_numba_par2(m_U, m_V, Du, Dv, Feed, Kill, delta_t,  step_frame)
+        frames_V[idx_f,:,:] = m_V
+    return frames_V
+
+
+@nb.njit(fastmath={"reassoc", "contract", "arcp"}, cache=True, parallel=True)
+def grayscott_numba_par2(m_U, m_V, Du, Dv, Feed, Kill, delta_t,  step_frame):
+    # Init constante
+    n_x, n_y = m_U.shape[0], m_U.shape[1]
+    alpha_u = -Feed - 4 * Du
+    alpha_v = -Feed - Kill - 4 * Dv
+    dtFeed = delta_t * Feed
+    range_j = range(1, n_y - 1)
+    range_step = range(step_frame)
+    c_U = np.empty_like(m_U)
+    c_V = np.empty_like(m_U)
+    for _ in range_step:
+        c_U[:,:] = m_U
+        c_V[:,:] = m_V
+        for li in nb.prange(1, n_x - 1):
+            for lj in range_j:
+                uvv = c_U[li, lj] * (c_V[li, lj] ** 2)
+                # update m_U
+                dudt = ((c_U[li, lj] * alpha_u) - uvv) + Du * (
+                    c_U[li - 1, lj] + c_U[li + 1, lj] + c_U[li, lj - 1] + c_U[li, lj + 1]
+                )
+                m_U[li, lj] += (delta_t * dudt) + dtFeed
+                # update m_V
+                dvdt = ((c_V[li, lj] * alpha_v) + uvv) + Dv * (
+                    c_V[li - 1, lj] + c_V[li + 1, lj] + c_V[li, lj - 1] + c_V[li, lj + 1]
+                )
+                m_V[li, lj] += delta_t * dvdt
+    return m_U, m_V
 
 
 # @nb.njit(**kwd)
@@ -195,7 +232,7 @@ if __name__ == "__main__":
     U, V, _ = gsc.grayscott_init(1920, 1080)
     gs_pars = gsc.grayscott_pars()
     nb_frame = 100
-    frames_ui = gsc.grayscott_main(grayscott_numba, gs_pars, U, V, nb_frame)
+    frames_ui = gsc.grayscott_main(grayscott_numba_par, gs_pars, U, V, nb_frame)
     # last image
     plt.figure()
     plt.imshow(frames_ui[-1])

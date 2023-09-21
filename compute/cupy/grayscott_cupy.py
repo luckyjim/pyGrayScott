@@ -15,23 +15,15 @@ def grayscott_kernel(Lu, Lv, u, v, Du, Dv, F, k, delta_t):
 def grayscott_cupy(U, V, Du, Dv, F, k, delta_t, nb_frame, step_frame):
     '''
     Solve Gray-Scott equation with finite difference,
-    hardward target GPU wiht cupy libraray :
+    hardward target GPU wiht cupy library :
     
        * laplacian is computed with 2D convolution provided by cupy
        * update U, V with elementwise GPU kernel
-    
-    :param U: array 2D 
-    :param V: array 2D 
-    :param Du: float
-    :param Dv: float 
-    :param F: float
-    :param k: float
-    :param delta_t: float
-    :param nb_frame: number of frame in video
-    :param step_frame: copy frame each 'step_frame' finit difference iteration
     '''
+    # output video frames
     n_x, n_y = U.shape[0], U.shape[1]
-    frames_V = np.empty((nb_frame, n_x, n_y), dtype=np.float16)
+    frames_V = np.empty((nb_frame, n_x, n_y), dtype=np.float32)
+    # Laplacian stencile
     stencil = np.array([[0, 1, 0],
                         [1, -4, 1],
                         [0, 1, 0]],
@@ -46,7 +38,7 @@ def grayscott_cupy(U, V, Du, Dv, F, k, delta_t, nb_frame, step_frame):
             Lu = conv2d_gpu(u_gpu, stl_gpu, 'same', 'fill', 0)
             Lv = conv2d_gpu(v_gpu, stl_gpu, 'same', 'fill', 0)
             grayscott_kernel(Lu, Lv, u_gpu, v_gpu, Du, Dv, F, k, delta_t)
-        frames_V[idx_fr ,:,:] = v_gpu.get().astype(np.float16)
+        frames_V[idx_fr ,:,:] = v_gpu.get()
     return frames_V
 
 
