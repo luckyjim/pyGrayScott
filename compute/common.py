@@ -85,7 +85,7 @@ def grayscott_main(func_grayscott, gs_pars, u_ar, v_ar, nb_frame, step_frame=34)
     t0 = time.process_time()
     frames_v_ar = func_grayscott(u_ar, v_ar, Du, Dv, F, k, delta_t, nb_frame, step_frame)
     duration = time.process_time() - t0
-    print(f"CPu_ar time= {duration} s")
+    print(f"CPU time= {duration} s")
     frames_ui = np.empty((nb_frame, u_ar.shape[0], u_ar.shape[1]), dtype=np.uint8)
     for idx in range(nb_frame):
         v_ar = frames_v_ar[idx]
