@@ -1,18 +1,8 @@
 # Gray-Scott equation
 
-Solve Gray-Scott equation in python language and its calculation libraries
+Solve Gray-Scott equation in python language with libraries :
+* numpy : standard library for multi-dimensional arrays and matrices
+* numba : Numba translates Python functions to optimized machine code at runtime using the industry-standard LLVM compiler library
+* cupy : CuPy is an open-source array library for GPU-accelerated computing with Python. 
 
 
-# Conda environnement for Gray-scott resolution
-
-```bash
-conda create --name gs_env1 python=3.9 -y
-conda activate gs_env1
-conda install numpy -y 
-pip install opencv-python
-pip install  matplotlib
-conda install numba -y 
-conda install -c numba icc_rt -y
-....
-conda deactivate
-```
