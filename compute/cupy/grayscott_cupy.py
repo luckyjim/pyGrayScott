@@ -1,3 +1,6 @@
+"""
+Colley Jean-Marc CNRS/IN2P3/LPNHE
+"""
 import cupy as cp
 import numpy as np 
 import compute.common as gsc

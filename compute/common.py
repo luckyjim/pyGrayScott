@@ -1,9 +1,5 @@
-"""
-Created on 18 juin 2023
-
-@author: jcolley
-"""
 import time
+from datetime import datetime
 
 import cv2
 import numpy as np
@@ -12,14 +8,7 @@ import matplotlib.pylab as plt
 
 def grayscott_init(n_x, n_y, t_float=np.float32):
     """
-    Return 2 2D-array (n_x, n_y)
-
-    :param n_x:
-    :type n_x:
-    :param n_y:
-    :type n_y:
-    :param n_pix:
-    :type n_pix:
+    init rectangle
     """
     print(n_x, n_y)
     u_ar = np.ones((n_x, n_y), dtype=t_float)
@@ -48,13 +37,6 @@ def grayscott_pars(name=""):
 
 
 def frames_to_video(frames, file_video, fps=24):
-    '''
-    
-    :param frames:
-    :param file_video:
-    :param fps:
-    '''
-   
     print(frames.shape)
     n1, n2 = frames.shape[1], frames.shape[2]
     video = cv2.VideoWriter(f"{file_video}.avi", cv2.VideoWriter_fourcc(*"DIVX"), fps, (n1, n2))
@@ -67,12 +49,8 @@ def frames_to_video(frames, file_video, fps=24):
 
 def grayscott_main(func_grayscott, gs_pars, u_ar, v_ar, nb_frame, step_frame=34):
     '''
-    :param func_grayscott:
-    :param gs_pars:
-    :param u_ar:
-    :param v_ar:
-    :param nb_frame:
-    :param step_frame:
+    * measure time to compute Gray-Scott
+    * convert array frame to video with name of method, size image, time compute
     '''
     Du = gs_pars["Du"]
     Dv = gs_pars["Dv"]
@@ -82,10 +60,13 @@ def grayscott_main(func_grayscott, gs_pars, u_ar, v_ar, nb_frame, step_frame=34)
     print(f"step_frame={step_frame}")
     print(f"nb_frame={nb_frame}")
     print(func_grayscott.__name__)
-    t0 = time.process_time()
+    t_cpu = time.process_time()
+    t_wall = datetime.now()
     frames_v_ar = func_grayscott(u_ar, v_ar, Du, Dv, F, k, delta_t, nb_frame, step_frame)
-    duration = time.process_time() - t0
-    print(f"CPU time= {duration} s")
+    duration_cpu = time.process_time() - t_cpu
+    duration_wall = datetime.now()-t_wall
+    print(f"CPU time= {duration_cpu} s")
+    print(f"Wall time= {duration_wall} s")    
     frames_ui = np.empty((nb_frame, u_ar.shape[0], u_ar.shape[1]), dtype=np.uint8)
     for idx in range(nb_frame):
         v_ar = frames_v_ar[idx]
