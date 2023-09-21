@@ -42,6 +42,7 @@ def grayscott_cupy(U, V, Du, Dv, F, k, delta_t, nb_frame, step_frame):
     v_gpu = cp.asarray(V)
     for idx_fr  in range(nb_frame):
         for _ in range(step_frame):
+            # compute laplacians with convolution provided by cupy
             Lu = conv2d_gpu(u_gpu, stl_gpu, 'same', 'fill', 0)
             Lv = conv2d_gpu(v_gpu, stl_gpu, 'same', 'fill', 0)
             grayscott_kernel(Lu, Lv, u_gpu, v_gpu, Du, Dv, F, k, delta_t)
