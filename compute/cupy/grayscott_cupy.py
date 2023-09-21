@@ -26,7 +26,7 @@ def grayscott_cupy(U, V, Du, Dv, F, k, delta_t, nb_frame, step_frame):
     # output video frames
     n_x, n_y = U.shape[0], U.shape[1]
     frames_V = np.empty((nb_frame, n_x, n_y), dtype=np.float32)
-    # Laplacian stencile
+    # Laplacian stencil
     stencil = np.array([[0, 1, 0],
                         [1, -4, 1],
                         [0, 1, 0]],
