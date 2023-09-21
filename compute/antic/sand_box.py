@@ -26,7 +26,7 @@ def fft_stencil_laplacian(n_x, n_y):
 
 
 def laplacian_df_fft(a_2d, fft_lap):
-    return sf.fftshift(sf.irfft2(fft_lap*sf.rfft2(a_2d)))bb
+    return sf.fftshift(sf.irfft2(fft_lap*sf.rfft2(a_2d)))
 
 if __name__ == "__main__":
     plt.show()

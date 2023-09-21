@@ -94,7 +94,7 @@ def grayscott_main(func_grayscott, gs_pars, u_ar, v_ar, nb_frame, step_frame=34)
         frames_ui[idx] = v_ar_scaled
     file_video = func_grayscott.__name__ + f"_{u_ar.shape[0]}x{u_ar.shape[1]}_{nb_frame}_{int(duration+0.5)}"
     frames_to_video(frames_ui, file_video)
-    plt.figure()
-    plt.imshow(frames_ui[-1])
-    #plt.show()    
+    #plt.figure()
+    #plt.imshow(frames_ui[-1])
+    # plt.show()    
     return frames_ui
