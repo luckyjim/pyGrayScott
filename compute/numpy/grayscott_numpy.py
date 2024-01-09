@@ -38,7 +38,7 @@ def grayscott_numpy(U, V, Du, Dv, F, k, delta_t, nb_frame, step_frame):
     for idx_fr  in range(nb_frame):
         for _ in range(step_frame):
             U, V = grayscott_core(U, V, Du, Dv, F, k, delta_t)
-            frames_V[idx_fr ,:,:] = V
+        frames_V[idx_fr ,:,:] = V
     return frames_V
 
 

@@ -3,7 +3,7 @@ from datetime import datetime
 
 import cv2
 import numpy as np
-import matplotlib.pylab as plt
+#import matplotlib.pylab as plt
 
 
 def grayscott_init(n_x, n_y, t_float=np.float32):
