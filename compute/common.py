@@ -62,7 +62,8 @@ def grayscott_main(func_grayscott, gs_pars, u_ar, v_ar, nb_frame, step_frame=34)
     print(func_grayscott.__name__)
     t_cpu = time.process_time()
     t_wall = datetime.now()
-    frames_v_ar = func_grayscott(u_ar, v_ar, Du, Dv, F, k, delta_t, nb_frame, step_frame)
+    frames_v_ar_jax = func_grayscott(u_ar, v_ar, Du, Dv, F, k, delta_t, nb_frame, step_frame)
+    frames_v_ar = np.array(frames_v_ar_jax)
     duration_cpu = time.process_time() - t_cpu
     duration_wall = datetime.now()-t_wall
     print(f"CPU time= {duration_cpu} s")
@@ -73,7 +74,7 @@ def grayscott_main(func_grayscott, gs_pars, u_ar, v_ar, nb_frame, step_frame=34)
         v_ar_min = v_ar.min()
         v_ar_scaled = np.uint8(255 * (v_ar - v_ar_min / (v_ar.max() - v_ar_min)))
         frames_ui[idx] = v_ar_scaled
-    file_video = func_grayscott.__name__ + f"_{u_ar.shape[0]}x{u_ar.shape[1]}_{nb_frame}_{int(duration+0.5)}"
+    file_video = func_grayscott.__name__ + f"_{u_ar.shape[0]}x{u_ar.shape[1]}_{nb_frame}_{int(duration_wall.total_seconds()+0.5)}"
     frames_to_video(frames_ui, file_video)
     #plt.figure()
     #plt.imshow(frames_ui[-1])

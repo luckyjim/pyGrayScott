@@ -43,8 +43,9 @@ def grayscott_numpy(U, V, Du, Dv, F, k, delta_t, nb_frame, step_frame):
 
 
 if __name__ == "__main__":
-    U, V, _ = gsc.grayscott_init(1920, 1080)
+    #U, V, _ = gsc.grayscott_init(1920, 1080)
+    U, V, _ = gsc.grayscott_init(500, 500)
     gs_pars = gsc.grayscott_pars()
-    nb_frame = 100
+    nb_frame = 300
     frames_ui = gsc.grayscott_main(grayscott_numpy, gs_pars, U, V, nb_frame)
     
