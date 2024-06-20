@@ -25,14 +25,28 @@ def grayscott_init(n_x, n_y, t_float=np.float32):
 
 
 def grayscott_pars(name=""):
+    
+    if name  == "Labyrinthine":
+        l_pars = [0.1,0.05,0.037,0.06]
+    elif name  == "Spots":
+        l_pars = [0.1,0.05,0.014,0.054]
+    elif name  == "Pulsating spots":
+        l_pars = [1,1,0.025,0.06]        
+    elif name  == "Worms":
+        l_pars = [0.1,0.05,0.078,0.061]        
+    elif name  == "Holes":
+        l_pars = [1,1,0.039,0.058]
+    elif name  == "Spatiotemporal chaos":
+        l_pars = [1,1,0.026,0.051]
+    elif name  == "Intermittent chaos/holes":
+        l_pars = [1,1,0.034,0.056]
+    else:
+        l_pars = [0.1,0.05,0.0565,0.062]
     d_pars = {}
-    d_pars["Du"] = 0.1
-    d_pars["Dv"] = 0.05
-    d_pars["feed"] = 0.0565
-    d_pars["kill"] = 0.062
-    if name == "point":
-        d_pars["feed"] = 0.03
-        d_pars["kill"] = 0.062
+    d_pars["Du"] = l_pars[0]
+    d_pars["Dv"] = l_pars[1]
+    d_pars["feed"] = l_pars[2]
+    d_pars["kill"] = l_pars[3]
     return d_pars
 
 
