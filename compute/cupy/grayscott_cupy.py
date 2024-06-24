@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Colley Jean-Marc CNRS/IN2P3/LPNHE
 """
@@ -27,12 +28,10 @@ def grayscott_cupy(U, V, Du, Dv, F, k, delta_t, nb_frame, step_frame):
     n_x, n_y = U.shape[0], U.shape[1]
     frames_V = np.empty((nb_frame, n_x, n_y), dtype=np.float32)
     # Laplacian stencil
-    stencil = np.array([[0, 1, 0],
+    stl_gpu = cp.array([[0, 1, 0],
                         [1, -4, 1],
                         [0, 1, 0]],
-                        dtype=np.float32)
-    # Load in GPU memory
-    stl_gpu = cp.array(stencil)
+                        dtype=cp.float32)
     u_gpu = cp.asarray(U)
     v_gpu = cp.asarray(V)
     for idx_fr  in range(nb_frame):
@@ -41,12 +40,14 @@ def grayscott_cupy(U, V, Du, Dv, F, k, delta_t, nb_frame, step_frame):
             Lu = conv2d_gpu(u_gpu, stl_gpu, 'same', 'fill', 0)
             Lv = conv2d_gpu(v_gpu, stl_gpu, 'same', 'fill', 0)
             grayscott_kernel(Lu, Lv, u_gpu, v_gpu, Du, Dv, F, k, delta_t)
-        frames_V[idx_fr ,:,:] = v_gpu.get()
+        frames_V[idx_fr] = v_gpu.get()
     return frames_V
 
 
 if __name__ == "__main__":
     U, V, _ = gsc.grayscott_init(1920, 1080)
-    gs_pars = gsc.grayscott_pars()
-    nb_frame = 100
+    #U, V, _ = gsc.grayscott_init(500, 500)
+    name_pars = ""
+    gs_pars = gsc.grayscott_pars(name_pars)
+    nb_frame = 500
     frames_ui = gsc.grayscott_main(grayscott_cupy, gs_pars, U, V, nb_frame)
