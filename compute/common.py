@@ -62,11 +62,10 @@ def grayscott_main(func_grayscott, gs_pars, u_ar, v_ar, nb_frame, step_frame=34)
     print(func_grayscott.__name__)
     t_cpu = time.process_time()
     t_wall = datetime.now()
-    frames_v_ar_jax = func_grayscott(u_ar, v_ar, Du, Dv, F, k, delta_t, nb_frame, step_frame)
-    frames_v_ar = np.array(frames_v_ar_jax)
+    frames_v_ar = func_grayscott(u_ar, v_ar, Du, Dv, F, k, delta_t, nb_frame, step_frame)
     duration_cpu = time.process_time() - t_cpu
     duration_wall = datetime.now()-t_wall
-    print(f"CPU time= {duration_cpu} s")
+    print(f"CPU time JJ= {duration_cpu} s")
     print(f"Wall time= {duration_wall} s")    
     frames_ui = np.empty((nb_frame, u_ar.shape[0], u_ar.shape[1]), dtype=np.uint8)
     for idx in range(nb_frame):
