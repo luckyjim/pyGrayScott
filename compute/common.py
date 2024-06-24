@@ -31,7 +31,7 @@ def grayscott_pars(name=""):
     elif name  == "Spots":
         l_pars = [0.1,0.05,0.014,0.054]
     elif name  == "Pulsating spots":
-        l_pars = [1,1,0.025,0.06]        
+        l_pars = [0.1,0.05,0.025,0.06]        
     elif name  == "Worms":
         l_pars = [0.1,0.05,0.078,0.061]        
     elif name  == "Holes":
@@ -76,18 +76,23 @@ def grayscott_main(func_grayscott, gs_pars, u_ar, v_ar, nb_frame, step_frame=34)
     print(func_grayscott.__name__)
     t_cpu = time.process_time()
     t_wall = datetime.now()
-    frames_v_ar_jax = func_grayscott(u_ar, v_ar, Du, Dv, F, k, delta_t, nb_frame, step_frame)
-    frames_v_ar = np.array(frames_v_ar_jax)
+    frames_v_ar = func_grayscott(u_ar, v_ar, Du, Dv, F, k, delta_t, nb_frame, step_frame)
     duration_cpu = time.process_time() - t_cpu
     duration_wall = datetime.now()-t_wall
     print(f"CPU time= {duration_cpu} s")
-    print(f"Wall time= {duration_wall} s")    
+    print(f"Wall time= {duration_wall} s") 
     frames_ui = np.empty((nb_frame, u_ar.shape[0], u_ar.shape[1]), dtype=np.uint8)
-    for idx in range(nb_frame):
-        v_ar = frames_v_ar[idx]
-        v_ar_min = v_ar.min()
-        v_ar_scaled = np.uint8(255 * (v_ar - v_ar_min / (v_ar.max() - v_ar_min)))
-        frames_ui[idx] = v_ar_scaled
+    #return frames_ui
+    if frames_v_ar.dtype == np.float32:
+        for idx in range(nb_frame):
+            v_ar = frames_v_ar[idx]
+            v_ar_min = v_ar.min()
+            v_ar_max = v_ar.max()
+            #print(v_ar_min, v_ar_max)
+            v_ar_scaled = np.uint8(255 * (v_ar - v_ar_min / (v_ar_max - v_ar_min)))
+            frames_ui[idx] = v_ar_scaled
+    else:
+        frames_ui = frames_v_ar
     file_video = func_grayscott.__name__ + f"_{u_ar.shape[0]}x{u_ar.shape[1]}_{nb_frame}_{int(duration_wall.total_seconds()+0.5)}"
     frames_to_video(frames_ui, file_video)
     #plt.figure()

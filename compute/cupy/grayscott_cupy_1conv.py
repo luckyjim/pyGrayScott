@@ -25,7 +25,7 @@ def grayscott_cupy_1c(U, V, Du, Dv, F, k, delta_t, nb_frame, step_frame):
     """
     # output video frames
     n_x, n_y = U.shape[0], U.shape[1]
-    frames_V = cp.empty((nb_frame, n_x, n_y), dtype=np.float32)
+    frames_V = cp.empty((nb_frame, n_x, n_y), dtype=cp.float32)
     # Laplacian stencil
     stencil = np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]], dtype=np.float32)
     # Load in GPU memory
@@ -46,15 +46,15 @@ def grayscott_cupy_1c(U, V, Du, Dv, F, k, delta_t, nb_frame, step_frame):
             grayscott_kernel(
                 Lap[:, :n_y], Lap[:, n_y + 4 :], u_gpu, v_gpu, Du, Dv, F, k, delta_t
             )
-        # frames_V[idx_fr ,:,:] = v_gpu.get()
-        frames_V[idx_fr, :, :] = v_gpu
-
-    return frames_V.get()
+        frames_V[idx_fr] = v_gpu
+    frames_V *= 255/0.7
+    frames_int = frames_V.astype(np.uint8)
+    return frames_int.get()
 
 
 if __name__ == "__main__":
     U, V, _ = gsc.grayscott_init(1920, 1080)
     # U, V, _ = gsc.grayscott_init(500, 500)
-    gs_pars = gsc.grayscott_pars()
-    nb_frame = 1000
+    gs_pars = gsc.grayscott_pars("Pulsating spots")
+    nb_frame = 5000
     frames_ui = gsc.grayscott_main(grayscott_cupy_1c, gs_pars, U, V, nb_frame)
