@@ -84,11 +84,16 @@ def grayscott_main(func_grayscott, gs_pars, u_ar, v_ar, nb_frame, step_frame=34)
     frames_ui = np.empty((nb_frame, u_ar.shape[0], u_ar.shape[1]), dtype=np.uint8)
     #return frames_ui
     if frames_v_ar.dtype == np.float32:
+        print(type(frames_v_ar))
+        print(frames_v_ar.shape)
+        print(np.sum(np.isnan(frames_v_ar)))
         for idx in range(nb_frame):
             v_ar = frames_v_ar[idx]
             v_ar_min = v_ar.min()
             v_ar_max = v_ar.max()
             #print(v_ar_min, v_ar_max)
+            # print(v_ar_max - v_ar_min)
+            # print(v_ar - v_ar_min)
             v_ar_scaled = np.uint8(255 * (v_ar - v_ar_min / (v_ar_max - v_ar_min)))
             frames_ui[idx] = v_ar_scaled
     else:

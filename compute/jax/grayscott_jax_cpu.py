@@ -1,6 +1,4 @@
-"""
-Colley Jean-Marc CNRS/IN2P3/LPNHE
-"""
+
 
 """
 Colley Jean-Marc CNRS/IN2P3/LPNHE
