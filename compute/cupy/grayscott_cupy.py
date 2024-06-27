@@ -12,7 +12,7 @@ from cupyx.scipy.signal import convolve2d as conv2d_gpu
 @cp.fuse()
 def grayscott_kernel(Lu, Lv, u, v, Du, Dv, F, k, delta_t):
     uvv = u * v * v
-    u += delta_t * ((Du * Lu - uvv) + F * (1 - u))
+    u += delta_t * ((Du * Lu - uvv) + F * (1.0 - u))
     v += delta_t * ((Dv * Lv + uvv) - v * (F + k))
 
 
@@ -49,5 +49,5 @@ if __name__ == "__main__":
     #U, V, _ = gsc.grayscott_init(500, 500)
     name_pars = ""
     gs_pars = gsc.grayscott_pars(name_pars)
-    nb_frame = 500
+    nb_frame = 1000
     frames_ui = gsc.grayscott_main(grayscott_cupy, gs_pars, U, V, nb_frame)
