@@ -1,52 +1,19 @@
 """
+Alice Faure
 Colley Jean-Marc CNRS/IN2P3/LPNHE
 """
 
-import os
-from functools import partial
-
-import jax
-import jax.numpy as jnp
-from jax.scipy.signal import convolve2d as conv2d_gpu
-import numpy as np
-
-import compute.common as gsc
-
-flag_gpu = False
-
-if flag_gpu:
-    os.environ["XLA_FLAGS"] = (
-        "--xla_gpu_enable_triton_softmax_fusion=true "
-        "--xla_gpu_triton_gemm_any=True "
-        "--xla_gpu_enable_async_collectives=true "
-        "--xla_gpu_enable_latency_hiding_scheduler=true "
-        "--xla_gpu_enable_highest_priority_async_stream=true "
-    )
-
-"""
-From Alice Faure work
-
-
-1920 1080
-step_x=0.0005211047420531526
-step_frame=34
-nb_frame=1000
-gray_scott_jaxlap
-CPU time= 760.005607155 s
-Wall time= 0:06:29.966826 s
-<class 'numpy.ndarray'>
-(1000, 1920, 1080)
-"""
-
-import numpy as np
-import jax.numpy as jnp
-import jax
-from jax.scipy.signal import correlate2d
-from functools import partial
-import compute.common as gsc
 import timeit
-
 import os
+from functools import partial
+
+import numpy as np
+import jax.numpy as jnp
+import jax
+
+
+import compute.common as gsc
+
 
 os.environ["XLA_FLAGS"] = (
     "--xla_gpu_enable_triton_softmax_fusion=true "
@@ -55,12 +22,6 @@ os.environ["XLA_FLAGS"] = (
     "--xla_gpu_enable_latency_hiding_scheduler=true "
     "--xla_gpu_enable_highest_priority_async_stream=true "
 )
-
-# https://en.wikipedia.org/wiki/Discrete_Laplace_operator#Implementation_via_operator_discretization
-# 9-point stencil
-# stencil = jnp.array([[0.25, 0.5, 0.25], [0.5, -3, 0.5], [0.25, 0.5, 0.25]], dtype=jnp.float32)
-# 5 point stencil
-# stencil = jnp.array([[0, 1.0, 0], [1.0, -4.0, 1.0], [0.0, 1.0, 0.0]], dtype=jnp.float32)
 
 
 @jax.jit
