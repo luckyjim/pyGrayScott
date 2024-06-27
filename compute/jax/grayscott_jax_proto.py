@@ -67,6 +67,29 @@ def laplacian_9_jax(u):
     lap_full = jnp.zeros_like(u)
     return lap_full.at[1:-1, 1:-1].set(lap)
 
+@jax.jit
+def laplacian_9_with_1_jax(u):
+    """
+    stencil 9 point with 1 around
+       1, 1,1
+       1,-8,1
+       1, 1,1
+       
+    fill 0 border
+    
+    :param u: tableau 2D
+    """
+    lap = u.at[:-2, 1:-1].get()
+    lap = lap + u.at[1:-1, :-2].get()
+    lap = lap + u.at[1:-1, 2:].get()
+    lap = lap + u.at[2:, 1:-1].get()
+    lap = lap - 8.0 * u.at[1:-1, 1:-1].get()
+    lap = lap + u.at[:-2, :-2].get()
+    lap = lap + u.at[2:, 2:].get()
+    lap = lap + u.at[2:, :-2].get()
+    lap = lap + u.at[:-2, 2:].get()
+    lap_full = jnp.zeros_like(u)
+    return lap_full.at[1:-1, 1:-1].set(lap)
 
 def laplacian_5_jax_slow(u):
     """
