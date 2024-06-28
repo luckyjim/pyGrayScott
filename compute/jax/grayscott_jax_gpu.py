@@ -77,8 +77,8 @@ def gray_scott_jax_core(U, V, Du, Dv, f, k, dt, UVV):
     """ """
 
     UVV = U * V * V
-    U = U + ((Du * laplacian_9_jax(U) - UVV + f * (1 - U)) * dt)
-    V = V + ((Dv * laplacian_9_jax(V) + UVV - V * (f + k)) * dt)
+    U = U + ((Du * laplacian_9_with_1_jax(U) - UVV + f * (1 - U)) * dt)
+    V = V + ((Dv * laplacian_9_with_1_jax(V) + UVV - V * (f + k)) * dt)
     return U, V
 
 
@@ -105,6 +105,7 @@ def gray_scott_jax_fast(U_np, V_np, Du, Dv, f, k, dt, nb_frame, step_frame):
     UVV = jnp.zeros((n_x, n_y), dtype=jnp.float32)
     U = jnp.array(U_np)
     V = jnp.array(V_np)
+    print("device array V ", V.devices())
     for idx_fr in range(nb_frame):
         for _ in range(step_frame):
             U, V = gray_scott_jax_core(U, V, Du, Dv, f, k, dt, UVV)
@@ -115,7 +116,7 @@ def gray_scott_jax_fast(U_np, V_np, Du, Dv, f, k, dt, nb_frame, step_frame):
 if __name__ == "__main__":
     if True:
         U, V, _ = gsc.grayscott_init(1920, 1080)
-        # U, V, _ = gsc.grayscott_init(500, 500)
+        #U, V, _ = gsc.grayscott_init(500, 500)
         gs_pars = gsc.grayscott_pars()
-        nb_frame = 1000
+        nb_frame = 100
         gsc.grayscott_main(gray_scott_jax_fast, gs_pars, U, V, nb_frame)
