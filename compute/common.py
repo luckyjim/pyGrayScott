@@ -35,11 +35,11 @@ def grayscott_pars(name=""):
     elif name  == "Worms":
         l_pars = [0.1,0.05,0.078,0.061]        
     elif name  == "Holes":
-        l_pars = [1,1,0.039,0.058]
+        l_pars = [0.1,0.05,0.039,0.058]
     elif name  == "Spatiotemporal chaos":
-        l_pars = [1,1,0.026,0.051]
+        l_pars = [0.1,0.05,0.05,0.026,0.051]
     elif name  == "Intermittent chaos/holes":
-        l_pars = [1,1,0.034,0.056]
+        l_pars = [0.1,0.05,0.034,0.056]
     else:
         l_pars = [0.1,0.05,0.0565,0.062]
     d_pars = {}
